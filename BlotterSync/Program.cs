@@ -1,42 +1,43 @@
 using System.Text;
 using BlotterSync.Models;
 using BlotterSync.Profiles;
+using BlotterSync.Sync;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Npgsql;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-var rawConnectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
-    ?? builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? builder.Configuration.GetConnectionString("SupabaseConnection");
+var rawConnectionString = DatabaseConnection.ResolveCloudConnectionString(builder.Configuration);
 
 var configuredProvider = builder.Configuration.GetValue<string>("DatabaseProvider");
-bool isPostgreSql = IsPostgreSql(configuredProvider, rawConnectionString);
+bool isPostgreSql = DatabaseConnection.IsPostgreSql(configuredProvider, rawConnectionString);
 
 if (isPostgreSql)
 {
-    var pgConnectionString = FormatNpgsqlConnectionString(rawConnectionString!);
-    builder.Services.AddDbContext<BlotterSyncContext>(options =>
-    {
-        options.UseNpgsql(pgConnectionString, npgsqlOptions =>
-        {
-            npgsqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorCodesToAdd: null);
-        });
-    });
+    // Offline fail-safe: the API always uses a local SQLite database on this server,
+    // and CloudSyncService copies every change to Supabase whenever the internet is up.
+    var localConnectionString = DatabaseConnection.ResolveLocalConnectionString(
+        builder.Configuration, builder.Environment.ContentRootPath);
+    var pgConnectionString = DatabaseConnection.FormatNpgsqlConnectionString(rawConnectionString!);
+
+    builder.Services.AddDbContext<LocalBlotterSyncContext>(options => options.UseSqlite(localConnectionString));
+    builder.Services.AddScoped<BlotterSyncContext>(sp => sp.GetRequiredService<LocalBlotterSyncContext>());
+    builder.Services.AddDbContextFactory<CloudBlotterSyncContext>(options => options.UseNpgsql(pgConnectionString));
+
+    builder.Services.AddSingleton<SyncStatus>();
+    builder.Services.AddSingleton<CloudSyncService>();
+    builder.Services.AddHostedService(sp => sp.GetRequiredService<CloudSyncService>());
 }
 else
 {
     builder.Services.AddDbContext<BlotterSyncContext>(options =>
         options.UseSqlServer(rawConnectionString));
+    builder.Services.AddSingleton<SyncStatus>();
 }
 
 builder.Services.AddAutoMapper(config =>
@@ -116,6 +117,11 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+if (isPostgreSql)
+{
+    await app.Services.GetRequiredService<CloudSyncService>().InitializeLocalStoreAsync(CancellationToken.None);
 }
 
 if (app.Configuration.GetValue<bool>("Database:EnsureCreated", false))
@@ -198,8 +204,9 @@ if (app.Configuration.GetValue<bool>("Database:EnsureCreated", false))
             db.SaveChanges();
         }
     }
-    catch
+    catch (Exception ex)
     {
+        app.Logger.LogError(ex, "Database seeding failed.");
     }
 }
 
@@ -209,96 +216,3 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
-
-static bool IsPostgreSql(string? provider, string? conn)
-{
-    if (string.Equals(provider, "PostgreSQL", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(provider, "Supabase", StringComparison.OrdinalIgnoreCase))
-    {
-        return true;
-    }
-
-    if (string.Equals(provider, "SqlServer", StringComparison.OrdinalIgnoreCase))
-    {
-        return false;
-    }
-
-    if (string.IsNullOrWhiteSpace(conn))
-    {
-        return false;
-    }
-
-    return conn.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
-        || conn.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)
-        || conn.Contains("Host=", StringComparison.OrdinalIgnoreCase)
-        || conn.Contains("Port=5432", StringComparison.OrdinalIgnoreCase)
-        || conn.Contains("Port=6543", StringComparison.OrdinalIgnoreCase)
-        || conn.Contains("supabase.co", StringComparison.OrdinalIgnoreCase)
-        || conn.Contains("pooler.supabase.com", StringComparison.OrdinalIgnoreCase)
-        || conn.Contains("Username=postgres", StringComparison.OrdinalIgnoreCase)
-        || conn.Contains("User Id=postgres", StringComparison.OrdinalIgnoreCase);
-}
-
-static string FormatNpgsqlConnectionString(string rawConnection)
-{
-    if (string.IsNullOrWhiteSpace(rawConnection))
-    {
-        return rawConnection;
-    }
-
-    try
-    {
-        if (rawConnection.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase) ||
-            rawConnection.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
-        {
-            var uri = new Uri(rawConnection);
-            var userInfo = uri.UserInfo.Split(':');
-            var username = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : string.Empty;
-            var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
-            var database = uri.AbsolutePath.TrimStart('/');
-
-            if (string.IsNullOrEmpty(database))
-            {
-                database = "postgres";
-            }
-
-            var port = uri.Port > 0 ? uri.Port : 5432;
-
-            var builder = new NpgsqlConnectionStringBuilder
-            {
-                Host = uri.Host,
-                Port = port,
-                Database = database,
-                Username = username,
-                Password = password,
-                SslMode = SslMode.Require
-            };
-
-            if (port == 6543)
-            {
-                builder.Multiplexing = false;
-            }
-
-            return builder.ConnectionString;
-        }
-
-        var npgsqlBuilder = new NpgsqlConnectionStringBuilder(rawConnection);
-
-        if (!rawConnection.Contains("SSL Mode", StringComparison.OrdinalIgnoreCase) &&
-            !rawConnection.Contains("SslMode", StringComparison.OrdinalIgnoreCase))
-        {
-            npgsqlBuilder.SslMode = SslMode.Require;
-        }
-
-        if (npgsqlBuilder.Port == 6543)
-        {
-            npgsqlBuilder.Multiplexing = false;
-        }
-
-        return npgsqlBuilder.ConnectionString;
-    }
-    catch
-    {
-        return rawConnection;
-    }
-}

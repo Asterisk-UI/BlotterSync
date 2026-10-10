@@ -15,6 +15,13 @@ public partial class BlotterSyncContext : DbContext
     {
     }
 
+    // Lets the local (SQLite) and cloud (Supabase) stores derive from this context
+    // so each provider gets its own cached model.
+    protected BlotterSyncContext(DbContextOptions options)
+        : base(options)
+    {
+    }
+
     public virtual DbSet<BlotterRecord> BlotterRecords { get; set; }
 
     public virtual DbSet<Category> Categories { get; set; }
@@ -43,6 +50,7 @@ public partial class BlotterSyncContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var isPostgreSql = Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true;
+        var isSqlite = Database.ProviderName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true;
 
         modelBuilder.Entity<BlotterRecord>(entity =>
         {
@@ -57,6 +65,10 @@ public partial class BlotterSyncContext : DbContext
                     .HasDefaultValueSql("CURRENT_TIMESTAMP")
                     .HasColumnType("timestamp without time zone");
                 entity.Property(e => e.ResolutionDate).HasColumnType("timestamp without time zone");
+            }
+            else if (isSqlite)
+            {
+                entity.Property(e => e.ReportedDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             }
             else
             {

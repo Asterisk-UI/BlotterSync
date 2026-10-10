@@ -480,3 +480,9 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# BlotterSync local offline database
+App_Data/
+*.db
+*.db-shm
+*.db-wal

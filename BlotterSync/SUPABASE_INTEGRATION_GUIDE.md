@@ -113,3 +113,18 @@ Keep `"Database:EnsureCreated": true` in `appsettings.json`. When you run the Bl
    ```
    On first login, BlotterSync's authentication system will automatically hash and upgrade the default password to a PBKDF2 ASP.NET Core Identity password hash directly in Supabase Postgres.
 4. Retrieve the JWT bearer token from the response and authorize requests in Swagger or [`BlotterSync.http`](file:///c:/Users/Ree/Documents/GitHub/BlotterSync/BlotterSync/BlotterSync.http).
+
+---
+
+## 6. Offline Fail-Safe (Internet Outages)
+
+When the PostgreSQL/Supabase provider is selected, BlotterSync doesn't depend on the internet to serve requests:
+
+* **The API always uses a local SQLite database** on the server (`App_Data/blottersync-local.db`, set by `ConnectionStrings:LocalConnection`). Logins, new blotter records, residents and announcements all keep working when the internet is down.
+* **Every change is queued** in a local outbox table. A background worker (`Sync/CloudSyncService.cs`) pushes the queue to Supabase every `Sync:IntervalSeconds` (default 10). When the connection drops, the queue grows. When it comes back, the queued changes upload on their own, in order.
+* **First start:** if the local database is new, BlotterSync first downloads all existing Supabase data into it. If Supabase can't be reached on that first start, the server still starts. Ids created offline start at 1,000,000 so they can't collide with existing cloud ids, and the Supabase data is merged in once the connection returns.
+* **Status:** `GET /api/Sync/Status` reports `cloudOnline`, `pendingChanges` and `failedChanges`. Each page shows a banner (`sync-status.js`) when the server is offline or still uploading.
+* **Rejected rows:** if Supabase refuses a row (for example a duplicate badge number), that row is retried up to 10 times and then set aside so the rest can sync. Admins can list these with `GET /api/Sync/Failed`, fix the data, and requeue them with `POST /api/Sync/RetryFailed`.
+
+> [!IMPORTANT]
+> This server's local database is the source of truth, and Supabase is a cloud copy of it. Edits made directly in the Supabase dashboard are not pulled back down and can be overwritten by later changes from the server. Back up `App_Data/` along with the rest of the server. To rebuild the local copy from Supabase, stop the app, check that `pendingChanges` was 0, then delete `App_Data/blottersync-local.db*` and start the app again.
