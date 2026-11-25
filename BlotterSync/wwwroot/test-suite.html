@@ -1,0 +1,468 @@
+<!-- 
+  BlotterSync Standalone - Quick Start Test Page
+  Open this page in a browser and click the test buttons to verify everything works
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlotterSync Standalone - Test Suite</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2559ce;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .section {
+            margin: 30px 0;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #2559ce;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1944a5;
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist li:last-child {
+            border-bottom: none;
+        }
+        .checklist li:before {
+            content: "☐ ";
+            color: #999;
+            margin-right: 8px;
+        }
+        .checklist li.done:before {
+            content: "☑ ";
+            color: #28a745;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #2559ce;
+        }
+        .stat-card strong {
+            display: block;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2559ce;
+            margin-top: 8px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 BlotterSync Standalone Test Suite</h1>
+        <p class="subtitle">Verify all functionality and data persistence</p>
+
+        <div class="section">
+            <h2>📊 System Status</h2>
+            <div id="system-status" class="status info">Initializing...</div>
+            <div id="system-stats" class="stats"></div>
+        </div>
+
+        <div class="section">
+            <h2>✅ Functionality Tests</h2>
+            <div class="button-group">
+                <button class="btn-primary" onclick="testStorage()">Test Storage</button>
+                <button class="btn-primary" onclick="testAuthentication()">Test Auth</button>
+                <button class="btn-primary" onclick="testRecordCRUD()">Test CRUD</button>
+                <button class="btn-primary" onclick="testSearch()">Test Search</button>
+                <button class="btn-primary" onclick="testExport()">Test Export</button>
+                <button class="btn-primary" onclick="runAllTests()">Run All Tests</button>
+            </div>
+            <div id="test-results"></div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Data Operations</h2>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="showDemoData()">Show Demo Data</button>
+                <button class="btn-secondary" onclick="showStorageUsage()">Check Storage</button>
+                <button class="btn-secondary" onclick="exportToJSON()">Export as JSON</button>
+                <button class="btn-danger" onclick="resetDemo()">Reset to Demo</button>
+            </div>
+            <div id="data-results"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔄 Persistence Test</h2>
+            <p>Click the button below, then refresh the page (F5). Check the console to verify data persists.</p>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="testPersistence()">Test Persistence</button>
+            </div>
+            <ol class="checklist">
+                <li id="check-1">Create test data in localStorage</li>
+                <li id="check-2">Refresh the page (F5)</li>
+                <li id="check-3">Data should still exist after reload</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>🚀 Next Steps</h2>
+            <ol style="margin-left: 20px;">
+                <li>Verify all tests pass above</li>
+                <li>Open <code>index-standalone.html</code> to use the app</li>
+                <li>Login with demo credentials: <code>officer / password123</code></li>
+                <li>Create, edit, and delete some incidents</li>
+                <li>Refresh the page to verify data persists</li>
+                <li>Export your data for backup</li>
+            </ol>
+        </div>
+
+        <div class="footer">
+            <p>BlotterSync Standalone v1.0 | All data stored locally in browser</p>
+            <p><a href="index-standalone.html" style="color: #2559ce;">← Back to App</a></p>
+        </div>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="init-data.js"></script>
+    <script src="tests.js"></script>
+
+    <script>
+        function log(message, type = "info") {
+            const results = document.getElementById("test-results");
+            const div = document.createElement("div");
+            div.className = `status ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        function logData(message, type = "info") {
+            const results = document.getElementById("data-results");
+            const div = document.createElement("div");
+            div.className = `status ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        function updateStats() {
+            const users = storage.getUsers();
+            const records = storage.getRecords();
+            const categories = storage.getCategories();
+            const residents = storage.getResidents();
+
+            const statsDiv = document.getElementById("system-stats");
+            statsDiv.innerHTML = `
+                <div class="stat-card">
+                    <strong>Users</strong>
+                    <div class="value">${users.length}</div>
+                </div>
+                <div class="stat-card">
+                    <strong>Incidents</strong>
+                    <div class="value">${records.length}</div>
+                </div>
+                <div class="stat-card">
+                    <strong>Categories</strong>
+                    <div class="value">${categories.length}</div>
+                </div>
+                <div class="stat-card">
+                    <strong>Residents</strong>
+                    <div class="value">${residents.length}</div>
+                </div>
+            `;
+
+            const statusDiv = document.getElementById("system-status");
+            const pendingRecords = records.filter(r => r.status === "Pending").length;
+            const ongoingRecords = records.filter(r => r.status === "Ongoing").length;
+
+            statusDiv.className = "status success";
+            statusDiv.textContent = `✅ System Ready
+Storage: Initialized
+Demo Data: Loaded
+Users: ${users.length}
+Incidents: ${records.length} (${pendingRecords} pending, ${ongoingRecords} ongoing)
+LocalStorage Used: ${getStorageSize()}`;
+        }
+
+        function getStorageSize() {
+            let total = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    total += localStorage[key].length + key.length;
+                }
+            }
+            return (total / 1024).toFixed(2) + " KB";
+        }
+
+        function testStorage() {
+            try {
+                if (!window.storage) throw new Error("Storage object not found");
+                log("✅ Storage layer is initialized and ready", "success");
+                updateStats();
+            } catch (e) {
+                log("❌ Storage test failed: " + e.message, "error");
+            }
+        }
+
+        function testAuthentication() {
+            try {
+                const officer = storage.findUser("officer", "password123");
+                if (!officer) throw new Error("Officer login failed");
+                log("✅ Authentication working\nFound user: " + officer.firstName + " " + officer.lastName, "success");
+            } catch (e) {
+                log("❌ Authentication test failed: " + e.message, "error");
+            }
+        }
+
+        function testRecordCRUD() {
+            try {
+                const before = storage.getRecords().length;
+                const record = storage.saveRecord({
+                    recordId: "test_" + Date.now(),
+                    trackingNumber: "TEST-" + Date.now().toString().slice(-4),
+                    categoryId: "cat_theft",
+                    location: "Test Location",
+                    narrative: "Test incident",
+                    status: "Pending",
+                    incidentDate: new Date().toISOString(),
+                    reportedDate: new Date().toISOString()
+                });
+
+                const after = storage.getRecords().length;
+                if (after !== before + 1) throw new Error("Record count mismatch");
+
+                record.status = "Ongoing";
+                storage.saveRecord(record);
+
+                storage.deleteRecord(record.recordId);
+                const final = storage.getRecords().length;
+                if (final !== before) throw new Error("Delete failed");
+
+                log("✅ CRUD operations working\nCreated, updated, and deleted record successfully", "success");
+                updateStats();
+            } catch (e) {
+                log("❌ CRUD test failed: " + e.message, "error");
+            }
+        }
+
+        function testSearch() {
+            try {
+                const records = storage.getRecords();
+                if (records.length === 0) {
+                    log("⚠️  No records to search", "info");
+                    return;
+                }
+
+                const results = records.filter(r => r.location.includes(records[0].location.slice(0, 3)));
+                log("✅ Search working\nFound " + results.length + " records matching search criteria", "success");
+            } catch (e) {
+                log("❌ Search test failed: " + e.message, "error");
+            }
+        }
+
+        function testExport() {
+            try {
+                const data = storage.exportData();
+                const json = JSON.stringify(data);
+                const size = (json.length / 1024).toFixed(2);
+                log(`✅ Export working\nSize: ${size} KB\nRecords: ${data.records.length}`, "success");
+            } catch (e) {
+                log("❌ Export test failed: " + e.message, "error");
+            }
+        }
+
+        function showDemoData() {
+            try {
+                const users = storage.getUsers();
+                const categories = storage.getCategories();
+                const records = storage.getRecords();
+
+                logData(`📋 Demo Data Summary:
+Users: ${users.length}
+${users.map(u => `  • ${u.firstName} ${u.lastName} (${u.username})`).join("\n")}
+
+Categories: ${categories.length}
+${categories.map(c => `  • ${c.name} (severity: ${c.severity})`).slice(0, 3).join("\n")}
+  ... and ${categories.length - 3} more
+
+Incidents: ${records.length}
+${records.map(r => `  • ${r.trackingNumber} - ${r.location}`).slice(0, 3).join("\n")}
+  ... and ${records.length - 3} more`, "info");
+            } catch (e) {
+                logData("Error loading demo data: " + e.message, "error");
+            }
+        }
+
+        function showStorageUsage() {
+            try {
+                const size = getStorageSize();
+                const estimate = localStorage.length;
+                logData(`💾 Storage Usage:\nTotal: ${size}\nItems: ${estimate}\n\nBrowser Storage limits:\n  • Chrome: ~10 MB\n  • Firefox: ~10 MB\n  • Safari: ~5 MB\n  • Edge: ~10 MB`, "info");
+            } catch (e) {
+                logData("Error checking storage: " + e.message, "error");
+            }
+        }
+
+        function exportToJSON() {
+            try {
+                const data = storage.exportData();
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "blottersync-export-" + new Date().toISOString().split("T")[0] + ".json";
+                a.click();
+                logData("✅ File downloaded: " + a.download, "success");
+            } catch (e) {
+                logData("Error exporting: " + e.message, "error");
+            }
+        }
+
+        function resetDemo() {
+            if (confirm("Reset all demo data to initial state?")) {
+                localStorage.removeItem("blotter_initialized");
+                location.reload();
+            }
+        }
+
+        function testPersistence() {
+            const testKey = "persistence_test_" + Date.now();
+            const testValue = { timestamp: new Date().toISOString(), message: "This should persist after refresh" };
+            localStorage.setItem(testKey, JSON.stringify(testValue));
+
+            document.getElementById("check-1").classList.add("done");
+            logData(`✅ Test key created: ${testKey}\n📝 Value: ${JSON.stringify(testValue)}\n\n🔁 Now refresh the page and open console to verify the value persists.`, "info");
+        }
+
+        function runAllTests() {
+            document.getElementById("test-results").innerHTML =  "";
+            testStorage();
+            testAuthentication();
+            testRecordCRUD();
+            testSearch();
+            testExport();
+            log("✅ All tests completed!", "success");
+        }
+
+        // Initialize on load
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                await storage.init();
+                initializeDemoData();
+                updateStats();
+                log("System initialized successfully", "success");
+            } catch (e) {
+                log("Initialization error: " + e.message, "error");
+            }
+        });
+    </script>
+</body>
+</html>

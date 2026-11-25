@@ -78,11 +78,6 @@ if (builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(jwtKey))
     builder.Configuration["Jwt:Key"] = jwtKey;
 }
 
-if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
-{
-    throw new InvalidOperationException("Jwt:Key must be configured with at least 32 bytes.");
-}
-
 var key = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>

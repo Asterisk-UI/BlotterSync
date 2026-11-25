@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlotterSync - Authentication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-container {
+            display: flex;
+            width: 90%;
+            max-width: 1000px;
+            height: 600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .auth-left {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 40px;
+        }
+
+        .auth-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-left h1 {
+            font-size: 32px;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .auth-left p {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .auth-features {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        .auth-feature-check {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .auth-right {
+            flex: 1;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-form {
+            width: 100%;
+        }
+
+        .auth-form h2 {
+            font-size: 24px;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .auth-form-subtitle {
+            color: #58677c;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e7ef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f4fa;
+            color: #2559ce;
+            border: 2px solid #e1e7ef;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e8f0ff;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+            padding: 8px;
+            background: #fee2e2;
+            border-radius: 4px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .form-divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #b0b4bd;
+            font-size: 13px;
+        }
+
+        .form-divider::before,
+        .form-divider::after {
+            content: "";
+            display: inline-block;
+            width: 45%;
+            height: 1px;
+            background: #e1e7ef;
+            vertical-align: middle;
+        }
+
+        .form-divider::before {
+            margin-right: 10px;
+        }
+
+        .form-divider::after {
+            margin-left: 10px;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #58677c;
+        }
+
+        .form-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .demo-info {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .auth-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .auth-left {
+                padding: 30px;
+                min-height: 250px;
+            }
+
+            .auth-right {
+                padding: 30px;
+                min-height: 400px;
+            }
+
+            .auth-left h1 {
+                font-size: 24px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-left">
+            <div>
+                <div class="auth-logo">
+                    <div class="auth-logo-icon">📁</div>
+                    <span>BlotterSync</span>
+                </div>
+                <h1>Digital blotter workspace</h1>
+                <p>Keep the record clear. Give every incident the attention it needs.</p>
+            </div>
+            <div class="auth-features">
+                <div class="auth-feature">
+                    <div class="auth-feature-check">✓</div>
+                    <span>Record incidents with full details</span>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature-check">✓</div>
+                    <span>Track status and resolutions</span>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature-check">✓</div>
+                    <span>AI-assisted summaries and drafts</span>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature-check">✓</div>
+                    <span>Local data storage</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-right">
+            <form id="loginForm" class="auth-form">
+                <h2>Welcome</h2>
+                <p class="auth-form-subtitle">Sign in with your officer account</p>
+
+                <div class="demo-info">
+                    <strong>🎯 Demo Mode:</strong> Try with username: <code>officer</code> and password: <code>password123</code>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" autocomplete="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                </div>
+
+                <div id="loginError" class="error-message"></div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Sign In</button>
+                </div>
+
+                <div class="form-divider">or</div>
+
+                <div class="form-actions">
+                    <button type="button" id="demoBtn" class="btn btn-secondary">Explore Demo</button>
+                </div>
+
+                <div class="form-footer">
+                    All data is stored locally in your browser. <a href="#privacy">Privacy policy</a>
+                </div>
+            </form>
+
+            <form id="registerForm" class="auth-form hidden">
+                <h2>Create Officer Account</h2>
+                <p class="auth-form-subtitle">Register a new officer account</p>
+
+                <div class="form-group">
+                    <label for="regBadge">Badge Number</label>
+                    <input type="text" id="regBadge" name="badgeNumber" placeholder="e.g., PO1-999" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="regFirst">First Name</label>
+                    <input type="text" id="regFirst" name="firstName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="regLast">Last Name</label>
+                    <input type="text" id="regLast" name="lastName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="regUsername">Username</label>
+                    <input type="text" id="regUsername" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="regPassword">Password (min. 8 characters)</label>
+                    <input type="password" id="regPassword" name="password" minlength="8" required>
+                </div>
+
+                <div id="registerError" class="error-message"></div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                    <button type="button" id="backToLogin" class="btn btn-secondary">Back</button>
+                </div>
+
+                <div class="form-footer">
+                    Already have an account? <a href="#" id="goToLogin">Sign in here</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="init-data.js"></script>
+    <script>
+        // Initialize storage and demo data on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize storage
+            await storage.init();
+
+            // Initialize demo data
+            initializeDemoData();
+        });
+
+        // Form switching
+        document.getElementById('demoBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            handleDemoLogin();
+        });
+
+        // Toggle between login and register forms
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+
+        document.getElementById('backToLogin').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('loginError').classList.remove('show');
+        });
+
+        document.getElementById('goToLogin').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+        });
+
+        // Handle login submission
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            handleLogin(username, password);
+        });
+
+        // Handle register submission
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleRegister();
+        });
+
+        // Login handler
+        function handleLogin(username, password) {
+            const errorEl = document.getElementById('loginError');
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+
+            submitBtn.disabled = true;
+            errorEl.textContent = '';
+            errorEl.classList.remove('show');
+
+            // Simulated authentication (client-side only)
+            const user = storage.findUser(username, password);
+
+            if (user) {
+                storage.setCurrentUser(user);
+                // Redirect to app
+                window.location.href = 'workspace-standalone.html';
+            } else {
+                errorEl.textContent = 'Invalid username or password';
+                errorEl.classList.add('show');
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Demo login (uses first officer account)
+        function handleDemoLogin() {
+            const demoUser = storage.getUsers()[0]; // Get first officer
+            if (demoUser) {
+                storage.setCurrentUser(demoUser);
+                window.location.href = 'workspace-standalone.html';
+            }
+        }
+
+        // Register handler
+        function handleRegister() {
+            const errorEl = document.getElementById('registerError');
+            const submitBtn = registerForm.querySelector('button[type="submit"]');
+
+            submitBtn.disabled = true;
+            errorEl.textContent = '';
+            errorEl.classList.remove('show');
+
+            const badge = document.getElementById('regBadge').value;
+            const firstName = document.getElementById('regFirst').value;
+            const lastName = document.getElementById('regLast').value;
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+
+            // Validation
+            if (password.length < 8) {
+                errorEl.textContent = 'Password must be at least 8 characters';
+                errorEl.classList.add('show');
+                submitBtn.disabled = false;
+                return;
+            }
+
+            // Check if username already exists
+            if (storage.findUser(username, null)) {
+                errorEl.textContent = 'Username already exists';
+                errorEl.classList.add('show');
+                submitBtn.disabled = false;
+                return;
+            }
+
+            // Create new user
+            const newUser = {
+                officerId: 'officer_' + storage.generateId(),
+                badgeNumber: badge,
+                firstName: firstName,
+                lastName: lastName,
+                username: username,
+                password: password,
+                role: 'Officer',
+                active: true,
+                demo: false
+            };
+
+            storage.saveUser(newUser);
+
+            // Show success and switch back to login
+            alert('Account created successfully! You can now log in.');
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            submitBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>
