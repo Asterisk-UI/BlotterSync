@@ -486,3 +486,6 @@ App_Data/
 *.db
 *.db-shm
 *.db-wal
+
+# Local interface review captures (kept on disk for the handoff)
+.impeccable/review/

@@ -1,0 +1,41 @@
+name: Verify BlotterSync
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Harness tests
+        run: dotnet test BlotterSync.Tests/BlotterSync.Tests.csproj --configuration Release
+      - name: JavaScript syntax
+        run: node --check BlotterSync/wwwroot/workspace.js
+      - name: Demo API smoke tests
+        shell: bash
+        run: |
+          dotnet run --project BlotterSync/BlotterSync.csproj --configuration Release --no-build --no-launch-profile --urls http://127.0.0.1:5180 --environment Development > /tmp/blottersync-smoke.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:5180/workspace.html > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then
+            cat /tmp/blottersync-smoke.log
+            exit 1
+          fi
+          python3 scripts/smoke-test.py http://127.0.0.1:5180

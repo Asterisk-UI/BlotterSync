@@ -100,7 +100,7 @@
             <h2><i class="fa-solid fa-shield-halved"></i> BlotterSync</h2>
             <p>Barangay Malanday</p>
         </div>
-        <ul class="nav-menu">
+        <ul class="nav-menu"><li><a class="nav-item" href="workspace.html">AI workspace</a></li>
             <li class="nav-item active" onclick="switchView('blotterView', this)"><i class="fa-solid fa-folder-open"></i> Digital Blotter</li>
             <li class="nav-item" onclick="switchView('analyticsView', this)"><i class="fa-solid fa-map-location-dot"></i> Spatial Analytics</li>
             <li class="nav-item" onclick="switchView('reportsView', this)"><i class="fa-solid fa-file-invoice"></i> Reports Generation</li>
@@ -289,7 +289,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:5180';
+        const API_BASE_URL = window.location.origin;
         const token = localStorage.getItem('jwtToken');
         const role = localStorage.getItem('userRole');
 

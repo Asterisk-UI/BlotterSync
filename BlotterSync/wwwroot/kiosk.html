@@ -75,7 +75,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:5180';
+        const API_BASE_URL = window.location.origin;
 
         // 1. Sync Community Announcements from Admin Dashboard
         async function loadAnnouncements() {

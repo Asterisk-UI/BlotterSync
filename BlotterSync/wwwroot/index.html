@@ -44,7 +44,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:5180';
+        const API_BASE_URL = window.location.origin;
 
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
@@ -94,7 +94,7 @@
                     const data = await response.json();
                     localStorage.setItem('jwtToken', data.token);
                     localStorage.setItem('userRole', data.role);
-                    window.location.href = 'dashboard.html';
+                    window.location.href = 'workspace.html';
                 } else {
                     errorMsg.innerText = "Invalid username or password.";
                     errorMsg.style.display = 'block';

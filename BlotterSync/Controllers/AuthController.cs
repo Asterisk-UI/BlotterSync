@@ -39,6 +39,29 @@ namespace BlotterSync.Controllers
                 return Unauthorized("Invalid username or password.");
             }
 
+            return CreateLoginResponse(user);
+        }
+
+        [HttpPost("Demo")]
+        public async Task<IActionResult> Demo([FromServices] IWebHostEnvironment environment)
+        {
+            if (!environment.IsDevelopment() || !_configuration.GetValue<bool>("Demo:Enabled")) return NotFound();
+            var user = await _context.Officers.SingleOrDefaultAsync(o => o.Username == "demo.officer");
+            return user is null ? NotFound() : CreateLoginResponse(user);
+        }
+
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        [HttpGet("Me")]
+        public async Task<IActionResult> Me([FromServices] IWebHostEnvironment environment)
+        {
+            var id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var user = await _context.Officers.FindAsync(id);
+            return user is null ? Unauthorized() : Ok(new { name = $"{user.FirstName} {user.LastName}", user.Role,
+                demo = environment.IsDevelopment() && _configuration.GetValue<bool>("Demo:Enabled") });
+        }
+
+        private IActionResult CreateLoginResponse(Officer user)
+        {
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.OfficerId.ToString()),
@@ -67,7 +90,8 @@ namespace BlotterSync.Controllers
             {
                 token = new JwtSecurityTokenHandler().WriteToken(token),
                 role = user.Role,
-                officerId = user.OfficerId
+                officerId = user.OfficerId,
+                name = $"{user.FirstName} {user.LastName}"
             });
         }
 

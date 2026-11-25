@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="BlotterSync officer workspace. Record incidents, prepare reviewed briefs, and keep your barangay desk in sync."
+    />
+    <title>BlotterSync · Officer workspace</title>
+    <link rel="stylesheet" href="workspace.css" />
+    <script src="workspace.js" defer></script>
+  </head>
+  <body>
+    <svg
+      class="icon-library"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <symbol id="i-grid" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+        </symbol>
+        <symbol id="i-folder" viewBox="0 0 24 24">
+          <path
+            d="M3 7V5a2 2 0 0 1 2-2h5l3 3h6a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"
+          />
+          <path d="M3 10h18" />
+        </symbol>
+        <symbol id="i-spark" viewBox="0 0 24 24">
+          <path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z" />
+          <path d="M20 2v4m-2-2h4" />
+        </symbol>
+        <symbol id="i-history" viewBox="0 0 24 24">
+          <path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2" />
+        </symbol>
+        <symbol id="i-sync" viewBox="0 0 24 24">
+          <path
+            d="M20 7a9 9 0 0 0-15-2L2 8m0-6v6h6m-4 9a9 9 0 0 0 15 2l3-3m0 6v-6h-6"
+          />
+        </symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24">
+          <path d="M12 5v14M5 12h14" />
+        </symbol>
+        <symbol id="i-search" viewBox="0 0 24 24">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 5 5" />
+        </symbol>
+        <symbol id="i-file" viewBox="0 0 24 24">
+          <path
+            d="M14 2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9Zm0 0v7h7M7 13h10M7 17h7"
+          />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <path d="m5 12 4 4L19 6" />
+        </symbol>
+        <symbol id="i-clock" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </symbol>
+        <symbol id="i-chevron" viewBox="0 0 24 24">
+          <path d="m9 5 7 7-7 7" />
+        </symbol>
+        <symbol id="i-close" viewBox="0 0 24 24">
+          <path d="m6 6 12 12M6 18 18 6" />
+        </symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </symbol>
+        <symbol id="i-logout" viewBox="0 0 24 24">
+          <path d="M9 3H4v18h5m5-14 5 5-5 5m-7-5h12" />
+        </symbol>
+        <symbol id="i-pin" viewBox="0 0 24 24">
+          <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z" />
+          <circle cx="12" cy="10" r="2" />
+        </symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24">
+          <path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z" />
+          <path d="m8 12 3 3 5-6" />
+        </symbol>
+      </defs>
+    </svg>
+    <div id="auth" class="auth-page" hidden>
+      <div class="auth-story">
+        <a class="brand" href="workspace.html"
+          ><span class="brand-mark"
+            ><svg><use href="#i-folder" /></svg></span
+          >BlotterSync</a
+        >
+        <div>
+          <h1>A more connected<br />barangay desk.</h1>
+          <p>
+            Keep the record clear.<br />Give every incident the attention it
+            needs.
+          </p>
+          <div class="auth-example">
+            <svg class="icon"><use href="#i-file" /></svg
+            ><span>Record the incident</span
+            ><svg class="icon"><use href="#i-check" /></svg>
+          </div>
+          <div class="auth-example">
+            <svg class="icon"><use href="#i-spark" /></svg
+            ><span>Prepare a brief. Review every detail.</span
+            ><svg class="icon"><use href="#i-check" /></svg>
+          </div>
+        </div>
+        <p class="auth-foot">Barangay Malanday · Digital blotter workspace</p>
+      </div>
+      <section class="auth-form-wrap">
+        <form id="login-form" class="auth-form">
+          <h2>Welcome to your workspace</h2>
+          <p>Sign in with your officer account.</p>
+          <label for="username">Username</label
+          ><input
+            id="username"
+            name="username"
+            autocomplete="username"
+            required
+            maxlength="50"
+          />
+          <label for="password">Password</label
+          ><input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <button type="submit" class="button primary">Sign in</button>
+          <p id="login-error" class="error" role="alert"></p>
+          <div class="auth-divider">Or take a look around</div>
+          <button type="button" id="demo-login" class="button secondary">
+            Explore the demo workspace</button
+          ><small>The development demo uses synthetic records.</small
+          ><a href="index.html">Create an officer account</a>
+        </form>
+      </section>
+    </div>
+    <div id="shell" class="app-shell" hidden>
+      <aside id="sidebar" class="sidebar">
+        <a class="brand" href="workspace.html"
+          ><span class="brand-mark"
+            ><svg><use href="#i-folder" /></svg></span
+          >BlotterSync</a
+        >
+        <div class="barangay">
+          <svg class="icon"><use href="#i-pin" /></svg
+          ><span>Barangay Malanday<small>Officer workspace</small></span>
+        </div>
+        <nav aria-label="Workspace">
+          <button data-nav="overview" class="nav-button active">
+            <svg class="icon"><use href="#i-grid" /></svg>Overview
+          </button>
+          <button data-nav="incidents" class="nav-button">
+            <svg class="icon"><use href="#i-folder" /></svg>Incident
+            register<span id="nav-count" class="nav-count">0</span>
+          </button>
+          <button data-nav="intake" class="nav-button">
+            <svg class="icon"><use href="#i-spark" /></svg>Intake assistant
+          </button>
+          <button data-nav="history" class="nav-button">
+            <svg class="icon"><use href="#i-history" /></svg>Agent history
+          </button>
+          <button data-nav="settings" class="nav-button">
+            <svg class="icon"><use href="#i-sync" /></svg>Connections
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="desk-note">
+            <svg class="icon"><use href="#i-shield" /></svg>
+            <p>
+              Your judgment comes first.<small
+                >Every generated draft stays in review until you decide.</small
+              >
+            </p>
+          </div>
+          <a href="dashboard.html">Legacy dashboard</a
+          ><a href="kiosk.html">Community kiosk</a>
+          <div class="profile">
+            <span id="avatar" class="avatar">DO</span>
+            <div>
+              <strong id="profile-name">Desk officer</strong
+              ><small id="profile-role">Officer</small>
+            </div>
+            <button id="logout" class="icon-button" aria-label="Sign out">
+              <svg class="icon"><use href="#i-logout" /></svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+      <div class="main-shell">
+        <header class="topbar">
+          <div class="breadcrumb">
+            <button
+              id="menu-toggle"
+              class="icon-button mobile-only"
+              aria-label="Toggle navigation"
+              aria-expanded="false"
+            >
+              <svg class="icon"><use href="#i-menu" /></svg></button
+            ><span>Workspace</span><span class="slash">/</span
+            ><strong id="breadcrumb">Overview</strong>
+          </div>
+          <div class="topbar-right">
+            <span id="cloud-status" class="connection">Checking connection</span
+            ><span id="today"></span>
+          </div>
+        </header>
+        <main id="main">
+          <div id="demo-banner" class="demo-banner" hidden>
+            Demo workspace
+            <span
+              >All incident records are synthetic. Changes stay in this
+              development database.</span
+            >
+          </div>
+          <div id="global-error" class="error-banner" role="alert" hidden></div>
+          <div class="page-heading">
+            <div>
+              <h1 id="page-title">Incident overview</h1>
+              <p id="page-description">
+                A clear view of your records and the work ahead.
+              </p>
+            </div>
+            <button id="new-incident" class="button primary">
+              <svg class="icon"><use href="#i-plus" /></svg>New incident
+            </button>
+          </div>
+          <div id="page-content" aria-live="polite">
+            <p class="loading-text">Loading your incident workspace…</p>
+          </div>
+        </main>
+        <footer class="workspace-footer">
+          <span>BlotterSync · Barangay Malanday</span
+          ><span>Every record matters.</span>
+        </footer>
+      </div>
+    </div>
+    <div id="toast" class="toast" role="status" hidden></div>
+  </body>
+</html>

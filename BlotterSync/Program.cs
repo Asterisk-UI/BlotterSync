@@ -1,3 +1,8 @@
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Threading.RateLimiting;
+using BlotterSync.Agent;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Text;
 using BlotterSync.Models;
 using BlotterSync.Profiles;
@@ -17,7 +22,17 @@ var rawConnectionString = DatabaseConnection.ResolveCloudConnectionString(builde
 var configuredProvider = builder.Configuration.GetValue<string>("DatabaseProvider");
 bool isPostgreSql = DatabaseConnection.IsPostgreSql(configuredProvider, rawConnectionString);
 
-if (isPostgreSql)
+var demoEnabled = builder.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("Demo:Enabled");
+if (demoEnabled && !string.Equals(configuredProvider, "SQLite", StringComparison.OrdinalIgnoreCase))
+    throw new InvalidOperationException("Development demo requires the SQLite provider to keep sample records separate from cloud data.");
+
+if (string.Equals(configuredProvider, "SQLite", StringComparison.OrdinalIgnoreCase))
+{
+    var localConnection = DatabaseConnection.ResolveLocalConnectionString(builder.Configuration, builder.Environment.ContentRootPath);
+    builder.Services.AddDbContext<BlotterSyncContext>(options => options.UseSqlite(localConnection));
+    builder.Services.AddSingleton<SyncStatus>();
+}
+else if (isPostgreSql)
 {
     // Offline fail-safe: the API always uses a local SQLite database on this server,
     // and CloudSyncService copies every change to Supabase whenever the internet is up.
@@ -56,6 +71,12 @@ builder.Services.AddCors(options =>
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSettings["Key"];
 
+if (builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(jwtKey))
+{
+    jwtKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+    builder.Configuration["Jwt:Key"] = jwtKey;
+}
+
 if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
 {
     throw new InvalidOperationException("Jwt:Key must be configured with at least 32 bytes.");
@@ -85,6 +106,18 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<IPasswordHasher<Officer>, PasswordHasher<Officer>>();
 
+var agentPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", demoEnabled ? "agent-demo.db" : "agent-runs.db");
+Directory.CreateDirectory(Path.GetDirectoryName(agentPath)!);
+builder.Services.AddDbContext<AgentStore>(options => options.UseSqlite(new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder { DataSource = agentPath }.ConnectionString));
+builder.Services.AddScoped<AgentTools>();
+builder.Services.AddScoped<AgentHarness>();
+builder.Services.AddHttpClient<OpenAiAgent>(client => client.Timeout = TimeSpan.FromSeconds(55));
+builder.Services.AddRateLimiter(options => {
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("agent", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 6, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+});
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -210,9 +243,24 @@ if (app.Configuration.GetValue<bool>("Database:EnsureCreated", false))
     }
 }
 
-app.UseHttpsRedirection();
+using (var scope = app.Services.CreateScope())
+{
+    var audit = scope.ServiceProvider.GetRequiredService<AgentStore>();
+    await audit.InitializeAsync();
+    await audit.Runs.Where(r => r.Status == "running").ExecuteUpdateAsync(set => set
+        .SetProperty(r => r.Status, "cancelled").SetProperty(r => r.Error, "The server restarted before this run finished. Please retry."));
+}
+if (demoEnabled) await DemoData.SeedAsync(app.Services);
+
+if (!app.Environment.IsDevelopment()) app.UseHttpsRedirection();
+var defaults = new DefaultFilesOptions();
+defaults.DefaultFileNames.Clear();
+defaults.DefaultFileNames.Add("workspace.html");
+app.UseDefaultFiles(defaults);
+app.UseStaticFiles();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 app.Run();

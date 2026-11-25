@@ -39,7 +39,8 @@ public static class DatabaseConnection
             return true;
         }
 
-        if (string.Equals(provider, "SqlServer", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(provider, "SqlServer", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(provider, "SQLite", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
