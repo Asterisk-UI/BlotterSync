@@ -29,7 +29,12 @@ namespace BlotterSync.Controllers
             [FromQuery] string? searchStatus,
             [FromQuery] string? searchLocation)
         {
-            var query = _context.BlotterRecords.AsQueryable();
+            var query = _context.BlotterRecords
+                .Include(b => b.Category)
+                .Include(b => b.DeskOfficer)
+                .Include(b => b.Complainant)
+                .Include(b => b.Respondent)
+                .AsQueryable();
 
             if (!IsAdmin())
             {
@@ -70,7 +75,13 @@ namespace BlotterSync.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<BlotterRecordDTO>> GetBlotterRecord(int id)
         {
-            var record = await _context.BlotterRecords.FindAsync(id);
+            var record = await _context.BlotterRecords
+                .Include(b => b.Category)
+                .Include(b => b.DeskOfficer)
+                .Include(b => b.Complainant)
+                .Include(b => b.Respondent)
+                .FirstOrDefaultAsync(b => b.RecordId == id);
+
             if (record == null || !CanAccess(record))
             {
                 return NotFound();
@@ -84,6 +95,10 @@ namespace BlotterSync.Controllers
         public async Task<IActionResult> ExportBlotterRecordsToCSV()
         {
             var records = await _context.BlotterRecords
+                .Include(b => b.Category)
+                .Include(b => b.DeskOfficer)
+                .Include(b => b.Complainant)
+                .Include(b => b.Respondent)
                 .OrderByDescending(b => b.IncidentDate)
                 .ToListAsync();
 

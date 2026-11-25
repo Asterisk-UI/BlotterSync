@@ -10,12 +10,26 @@ namespace BlotterSync.DTOs
         [Required]
         public string Password { get; set; } = null!;
     }
-
+    public class DeleteDTO
+    {
+        [Required]
+        public string Username { get; set; } = null!;
+    }
+    public enum UserRole
+    {
+  
+        Officer = 0,
+        Admin = 1
+    }
     public class RegisterDTO
     {
         [Required]
         [StringLength(50)]
         public string BadgeNumber { get; set; } = null!;
+
+        [Required]
+        [StringLength(50)]
+        public string Role { get; set; } = null!;
 
         [Required]
         [StringLength(100)]

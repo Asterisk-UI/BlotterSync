@@ -42,7 +42,8 @@ else if (isPostgreSql)
 
     builder.Services.AddDbContext<LocalBlotterSyncContext>(options => options.UseSqlite(localConnectionString));
     builder.Services.AddScoped<BlotterSyncContext>(sp => sp.GetRequiredService<LocalBlotterSyncContext>());
-    builder.Services.AddDbContextFactory<CloudBlotterSyncContext>(options => options.UseNpgsql(pgConnectionString));
+    builder.Services.AddDbContextFactory<CloudBlotterSyncContext>(options => 
+        options.UseNpgsql(pgConnectionString, pgOptions => pgOptions.CommandTimeout(120)));
 
     builder.Services.AddSingleton<SyncStatus>();
     builder.Services.AddSingleton<CloudSyncService>();

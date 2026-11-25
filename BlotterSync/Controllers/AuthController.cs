@@ -94,7 +94,20 @@ namespace BlotterSync.Controllers
                 name = $"{user.FirstName} {user.LastName}"
             });
         }
+        // [HttpPost("Delete")]
+        // public async Task<IActionResult> Delete([FromBody] DeleteDTO deleteDto)
+        // {
+        //     var user = await _context.Officers.FirstOrDefaultAsync(u => u.Username == deleteDto.Username);
+        //     if (user == null)
+        //     {
+        //         return NotFound("User not found.");
+        //     }
 
+        //     _context.Officers.Remove(user);
+        //     await _context.SaveChangesAsync();
+
+        //     return Ok(new { message = "User deleted successfully." });
+        // }
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO registerDto)
         {
@@ -114,7 +127,7 @@ namespace BlotterSync.Controllers
                 FirstName = registerDto.FirstName,
                 LastName = registerDto.LastName,
                 Username = registerDto.Username,
-                Role = "Officer",
+                Role = registerDto.Role,
                 ActiveStatus = true
             };
 
